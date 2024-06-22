@@ -1,0 +1,39 @@
+/* import chalk-like fonts from respective files */
+@font-face {
+  font-family: 'Chalk-Regular';
+  src: url('./fonts/Chalk-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* font used for characters not available in primary font */
+@font-face {
+  font-family: 'PWChalk';
+  src: url('./fonts/PWChalk.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* format and style website */
+body {
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: x-large;
+  text-underline-offset: 5px;
+
+  /* chalkboard replication */
+  background-color: #2c3e50;
+  /* chalkboard texture image by rawpixel.com on Freepik: https://www.freepik.com/free-photo/painted-solid-concrete-wall-textured-background_15440267.htm#query=chalkboard%20background&position=5&from_view=keyword&track=ais_user&uuid=7c7646e6-9b0e-4430-9d71-b32cc34759a1 */
+  background-image: url('images/chalkboard-background.jpg');
+  /* position at horizontal and vertical centre */
+  background-position: center center;
+  /* ensure texture covers the entire area */
+  background-size: cover;
+  /* text colour to resemble chalk */
+  color: white;
+  /* imported chalk-like fonts */
+  font-family: 'Chalk-Regular', 'PWChalk', sans-serif;
+}
