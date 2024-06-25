@@ -13,6 +13,18 @@
 
 While this project currently only features an **_Ice-Cream Flavour Edition_**, future updates will expand the range of topics ("editions") to include a variety of themes to comprehensively provide the game with both entertainment and educational value.
 
+### Hangman Rules:
+
+- Try to guess the word by selecting letters.
+- Each incorrect guess adds a part to the stick figure.
+- You win if you guess the word before the hangman is fully drawn.
+- You lose if the hangman is fully drawn before you guess the word.
+
+### Game Instructions:
+
+- Click 'Reset' to start a new game.
+- 'Sound On' for full experience.
+
 ## Installation
 
 To run this project locally, follow these steps:
@@ -66,6 +78,7 @@ Screenshots of the project in action:
 ## Credits
 
 - Chalkboard Image by [rawpixel.com](https://www.freepik.com/free-photo/painted-solid-concrete-wall-textured-background_15440267.htm#query=chalkboard%20background&position=5&from_view=keyword&track=ais_user&uuid=7c7646e6-9b0e-4430-9d71-b32cc34759a1) on Freepik.
+- “Writing on black board1” sound effect by [pixabay.com](https://pixabay.com/sound-effects/writing-on-black-board1-86724/) on Pixabay.
 - Referenced [CodeSandbox](https://codesandbox.io/p/sandbox/react-hangman-exercise-hboin?file=%2Fsrc%2FHangman.js%3A1%2C1-122%2C1) for guidance on coding a Hangman App using ReactJS.
 
 Project created by: [Jediah Jireh Naicker](https://github.com/jediahjireh)

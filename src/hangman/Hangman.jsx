@@ -7,8 +7,14 @@ import React, { Component } from "react";
 // import random words function from dictionary file
 import { randomWord } from "./ice-cream-flavour-words.js";
 
-// import CSS styles from Hangman.css
+// import CSS styles from local file
 import "./hangman.css";
+
+/** “Writing on black board1” sound effect by pixabay.com on Pixabay:
+ * https://pixabay.com/sound-effects/writing-on-black-board1-86724/ */
+
+// import chalk swish sound from local file
+import chalkGlide from "./sounds/draw-with-chalk-on-chalkboard.mp3";
 
 // import images for Hangman stages
 import img1 from "./images/state1.gif";
@@ -24,7 +30,7 @@ import img8 from "./images/state8.gif";
 import img9 from "./images/state9.gif";
 
 class Hangman extends Component {
-  /** set defaults */
+  /* set defaults */
   static defaultProps = {
     // maximum number of incorrect guesses allowed
     maxIncorrect: 10,
@@ -48,6 +54,7 @@ class Hangman extends Component {
   constructor(props) {
     super(props);
 
+    // set default states
     this.state = {
       // number of incorrect guesses
       nIncorrect: 0,
@@ -55,6 +62,8 @@ class Hangman extends Component {
       guessed: new Set(),
       // select a random word as the answer
       answer: randomWord(),
+      // set chalk on chalkboard audio
+      audio: new Audio(chalkGlide),
     };
 
     // bind handleGuess method to this instance
@@ -72,10 +81,12 @@ class Hangman extends Component {
       guessed: new Set(),
       // get a new random word for the answer
       answer: randomWord(),
+      // restart chalkboard audio
+      audio: new Audio(chalkGlide),
     });
   }
 
-  /** function to show current-state of word while being guessed for */
+  /* function to show current-state of word while being guessed for */
   guessedWord() {
     // destructure answer and guessed from state
     const { answer, guessed } = this.state;
@@ -89,20 +100,67 @@ class Hangman extends Component {
     );
   }
 
-  /** function to handle a guessed letter */
-  handleGuess(event) {
-    // get guessed letter from event
-    let alphabet = event.target.value;
+  /* function to play the audio when called */
+  playAudio(duration) {
+    // destructure audio from state
+    const { audio } = this.state;
 
-    this.setState((set) => ({
-      // add guessed letter to guessed set
-      guessed: set.guessed.add(alphabet),
-      // increase incorrect guess count if letter not in answer
-      nIncorrect: set.nIncorrect + (set.answer.includes(alphabet) ? 0 : 1),
-    }));
+    // check if the audio is paused and not at the beginning
+    if (audio.paused && audio.currentTime > 0) {
+      // save the current time position before pausing
+      let currentTime = audio.currentTime;
+
+      // pause the audio
+      audio.pause();
+
+      // play audio from the saved position
+      audio.currentTime = currentTime;
+      audio.play();
+    } else {
+      // play audio from the start if not paused
+      audio.currentTime = 0;
+      audio.play();
+    }
+
+    // pause the audio after specified duration
+    setTimeout(() => {
+      audio.pause();
+    }, duration);
   }
 
-  /** function to return array of letter buttons to render */
+  /* function to handle a guessed letter */
+  handleGuess(event) {
+    // get the guessed letter from the button's value
+    let alphabet = event.target.value;
+
+    // check if the guessed letter is in the answer
+    let isCorrect = this.state.answer.includes(alphabet);
+
+    // set the duration for audio playback
+    let duration = isCorrect ? 250 : 500;
+
+    // update the component state with the guessed letter
+    this.setState((prevState) => ({
+      // add guessed letter to guessed set
+      guessed: prevState.guessed.add(alphabet),
+    }));
+
+    // if letter is not in answer
+    if (!isCorrect) {
+      // delay incrementing incorrect guesses until after chalk audio stops
+      setTimeout(() => {
+        this.setState((prevState) => ({
+          // increment incorrect guess count
+          nIncorrect: prevState.nIncorrect + 1,
+        }));
+      }, 500);
+    }
+
+    // play the audio with the calculated duration
+    this.playAudio(duration);
+  }
+
+  /* function to return array of letter buttons to render */
   generateButtons() {
     // destructure handleGuess method
     const { handleGuess } = this;
@@ -120,6 +178,8 @@ class Hangman extends Component {
         onClick={handleGuess}
         // disable button if letter is guessed
         disabled={guessed.has(alphabet)}
+        // apply a specific class to vowel buttons
+        className={`hangman ${"aeiou".includes(alphabet) ? "vowel" : ""}`}
       >
         {/* display letter on the button */}
         {alphabet}
@@ -127,19 +187,81 @@ class Hangman extends Component {
     ));
   }
 
-  /** render: render game */
+  /* function to display game rules in an alert */
+  showRules() {
+    alert(
+      "Rules:\n" +
+        "• Try to guess the word by selecting letters.\n" +
+        "• Each incorrect guess adds a part to the stick figure.\n" +
+        "• You win if you guess the word before the hangman is fully drawn.\n" +
+        "• You lose if the hangman is fully drawn before you guess the word.\n\n" +
+        "Instructions:\n" +
+        "• Click 'Reset' to start a new game.\n" +
+        "• 'Sound On' for full experience."
+    );
+  }
+
+  /* render: render game */
   render() {
     // destructure nIncorrect and answer from state
     const { nIncorrect, answer } = this.state;
     // destructure images and maxIncorrect from props
     const { images, maxIncorrect } = this.props;
 
+    // hold JSX content based on game state
+    let gameContent = null;
+
     // alternate text for image alt attribute
     let alternateText = `${this.state.nIncorrect} Incorrect guesses`;
 
+    // determine what content to display based on game state
+    if (answer === this.guessedWord().join("")) {
+      // player wins screen display
+      gameContent = (
+        <div>
+          <p>
+            The correct word is: <u>{answer}</u>
+            <br /> <br />
+            <b>You WIN</b>
+          </p>
+        </div>
+      );
+    } else if (nIncorrect === maxIncorrect) {
+      // player loses screen display
+      gameContent = (
+        <div>
+          <p>
+            <b>YOU LOSE</b>
+            <br /> <br />
+            The correct word was: <u>{answer}</u>
+          </p>
+        </div>
+      );
+    } else {
+      // show game interface if game is still in progress
+      gameContent = (
+        <div>
+          <p>Total Incorrect: {nIncorrect}</p>
+          {/* guessed letters or underscores for unguessed letters */}
+          <p className="hangman-word">{this.guessedWord()}</p>
+          {/* keyboard of letters */}
+          <p className="hangman-buttons">{this.generateButtons()}</p>
+        </div>
+      );
+    }
+
+    // return the main Hangman game interface with conditional content
     return (
       // hangman game container
-      <div className="Hangman">
+      <div className="hangman">
+        {/* help button */}
+        <button
+          className="rounded-circle"
+          id="help-button"
+          onClick={this.showRules}
+        >
+          ?
+        </button>
         {/* game title */}
         <h1>
           Hangman: <br />
@@ -148,38 +270,12 @@ class Hangman extends Component {
         {/* hangman image */}
         <img src={images[nIncorrect]} alt={alternateText} />
         <br />
-        {/* conditional rendering based on game outcome */}
-        {answer === this.guessedWord().join("") ? (
-          // notify user of their win if they guess the correct word
-          <p>
-            Correct! <br /> <br />
-            <b>You WIN</b>
-          </p>
-        ) : nIncorrect === maxIncorrect ? (
-          // notify user if max number of incorrect guesses reached
-          <div>
-            {/* display the correct word */}
-            <p>
-              {" "}
-              <b>YOU LOSE</b>
-              <br /> <br />
-              The correct word was: <u>{answer}</u>
-            </p>
-          </div>
-        ) : (
-          <div>
-            {/* display number of incorrect guesses */}
-            <p>Number Incorrect: {nIncorrect}</p>
-            {/* display guessed word with underscores underlining each letter */}
-            <p className="Hangman-word">{this.guessedWord()}</p>{" "}
-            {/* display letter buttons */}
-            <p className="Hangman-buttons">{this.generateButtons()}</p>{" "}
-          </div>
-        )}
-        {/* reset game button */}
-        <button id="reset" onClick={this.resetGame}>
+        {/* display either game content or outcome message */}
+        {gameContent}
+        {/* reset button */}
+        <button id="reset-button" onClick={this.resetGame}>
           Reset
-        </button>{" "}
+        </button>
       </div>
     );
   }
